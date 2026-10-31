@@ -8,3 +8,4 @@ venv/
 .deploy/
 .image-sha
 *.log
+!Bukti/*.log

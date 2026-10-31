@@ -1,0 +1,222 @@
+﻿Started by GitHub push by phyxa12
+Obtained Jenkinsfile from git git@github.com:phyxa12/python-crud-api.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/python-crud-api-pipeline
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+using credential github-deploy-readonly
+ > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/python-crud-api-pipeline/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url git@github.com:phyxa12/python-crud-api.git # timeout=10
+Fetching upstream changes from git@github.com:phyxa12/python-crud-api.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.47.3'
+using GIT_SSH to set credentials GitHub read-only deploy key for python-crud-api
+[INFO] SELinux is present on the host and we could not confirm that it does not apply actively: will try to relabel temporary files now; this may complain if context labeling not applicable after all
+ > /usr/bin/chcon --type=ssh_home_t /var/jenkins_home/workspace/python-crud-api-pipeline@tmp/jenkins-gitclient-ssh14558452355459576410.key
+Verifying host key using known hosts file
+ > git fetch --tags --force --progress -- git@github.com:phyxa12/python-crud-api.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 581d1388fd68b6f7915fdd2917480163d7cf7b37 (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 581d1388fd68b6f7915fdd2917480163d7cf7b37 # timeout=10
+Commit message: "test: trigger GitHub webhook (second attempt)"
+ > git rev-list --no-walk 69278b99ce95ffc11078b419f29fdced245bccbe # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] timestamps
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (1. Checkout Code)
+[Pipeline] checkout
+[2026-10-31T11:36:54.033Z] Selected Git installation does not exist. Using Default
+[2026-10-31T11:36:54.033Z] The recommended git tool is: NONE
+[2026-10-31T11:36:54.033Z] using credential github-deploy-readonly
+[2026-10-31T11:36:54.040Z]  > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/python-crud-api-pipeline/.git # timeout=10
+[2026-10-31T11:36:54.042Z] Fetching changes from the remote Git repository
+[2026-10-31T11:36:54.043Z]  > git config remote.origin.url git@github.com:phyxa12/python-crud-api.git # timeout=10
+[2026-10-31T11:36:54.045Z] Fetching upstream changes from git@github.com:phyxa12/python-crud-api.git
+[2026-10-31T11:36:54.045Z]  > git --version # timeout=10
+[2026-10-31T11:36:54.047Z]  > git --version # 'git version 2.47.3'
+[2026-10-31T11:36:54.047Z] using GIT_SSH to set credentials GitHub read-only deploy key for python-crud-api
+[2026-10-31T11:36:54.048Z] [INFO] SELinux is present on the host and we could not confirm that it does not apply actively: will try to relabel temporary files now; this may complain if context labeling not applicable after all
+[2026-10-31T11:36:54.048Z]  > /usr/bin/chcon --type=ssh_home_t /var/jenkins_home/workspace/python-crud-api-pipeline@tmp/jenkins-gitclient-ssh3070438063520122334.key
+[2026-10-31T11:36:54.050Z] Verifying host key using known hosts file
+[2026-10-31T11:36:54.054Z]  > git fetch --tags --force --progress -- git@github.com:phyxa12/python-crud-api.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+[2026-10-31T11:36:56.811Z]  > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+[2026-10-31T11:36:56.813Z] Checking out Revision 581d1388fd68b6f7915fdd2917480163d7cf7b37 (refs/remotes/origin/main)
+[2026-10-31T11:36:56.814Z]  > git config core.sparsecheckout # timeout=10
+[2026-10-31T11:36:56.817Z]  > git checkout -f 581d1388fd68b6f7915fdd2917480163d7cf7b37 # timeout=10
+[2026-10-31T11:36:56.820Z] Commit message: "test: trigger GitHub webhook (second attempt)"
+[Pipeline] sh
+[2026-10-31T11:36:57.091Z] + git rev-parse HEAD
+[2026-10-31T11:36:57.091Z] + echo Building commit: 581d1388fd68b6f7915fdd2917480163d7cf7b37
+[2026-10-31T11:36:57.091Z] Building commit: 581d1388fd68b6f7915fdd2917480163d7cf7b37
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (2. Lint Python)
+[Pipeline] sh
+[2026-10-31T11:36:57.419Z] + python3 -m ruff check app.py test_app.py
+[2026-10-31T11:36:57.419Z] All checks passed!
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (3. Syntax Check & Unit Test)
+[Pipeline] sh
+[2026-10-31T11:36:57.758Z] + python3 -m py_compile app.py test_app.py
+[Pipeline] sh
+[2026-10-31T11:36:58.030Z] + python3 -m unittest -v test_app.py
+[2026-10-31T11:36:58.030Z] test_create_message (test_app.APITestCase.test_create_message) ... [31/Oct/2026 11:36:57] "POST /messages HTTP/1.1" 201 -
+[2026-10-31T11:36:58.581Z] ok
+[2026-10-31T11:36:58.581Z] test_create_rejects_empty_message (test_app.APITestCase.test_create_rejects_empty_message) ... [31/Oct/2026 11:36:58] "POST /messages HTTP/1.1" 400 -
+[2026-10-31T11:36:59.132Z] ok
+[2026-10-31T11:36:59.132Z] test_create_rejects_invalid_json (test_app.APITestCase.test_create_rejects_invalid_json) ... [31/Oct/2026 11:36:58] "POST /messages HTTP/1.1" 400 -
+[2026-10-31T11:36:59.383Z] ok
+[2026-10-31T11:36:59.383Z] test_create_rejects_too_long_message (test_app.APITestCase.test_create_rejects_too_long_message) ... [31/Oct/2026 11:36:59] "POST /messages HTTP/1.1" 400 -
+[2026-10-31T11:36:59.934Z] ok
+[2026-10-31T11:36:59.934Z] test_data_persists_across_restart (test_app.APITestCase.test_data_persists_across_restart) ... [31/Oct/2026 11:36:59] "POST /messages HTTP/1.1" 201 -
+[2026-10-31T11:37:00.485Z] [31/Oct/2026 11:37:00] "GET /messages HTTP/1.1" 200 -
+[2026-10-31T11:37:01.037Z] ok
+[2026-10-31T11:37:01.037Z] test_delete_by_index (test_app.APITestCase.test_delete_by_index) ... [31/Oct/2026 11:37:00] "POST /messages HTTP/1.1" 201 -
+[2026-10-31T11:37:01.037Z] [31/Oct/2026 11:37:00] "DELETE /messages?index=0 HTTP/1.1" 200 -
+[2026-10-31T11:37:01.037Z] [31/Oct/2026 11:37:00] "GET /messages HTTP/1.1" 200 -
+[2026-10-31T11:37:01.588Z] ok
+[2026-10-31T11:37:01.588Z] test_delete_missing_index (test_app.APITestCase.test_delete_missing_index) ... [31/Oct/2026 11:37:01] "DELETE /messages HTTP/1.1" 400 -
+[2026-10-31T11:37:01.588Z] ok
+[2026-10-31T11:37:01.588Z] test_delete_out_of_range (test_app.APITestCase.test_delete_out_of_range) ... [31/Oct/2026 11:37:01] "DELETE /messages?index=999 HTTP/1.1" 404 -
+[2026-10-31T11:37:02.139Z] ok
+[2026-10-31T11:37:02.139Z] test_get_message_by_id (test_app.APITestCase.test_get_message_by_id) ... [31/Oct/2026 11:37:01] "POST /messages HTTP/1.1" 201 -
+[2026-10-31T11:37:02.139Z] [31/Oct/2026 11:37:01] "GET /messages/1 HTTP/1.1" 200 -
+[2026-10-31T11:37:02.390Z] ok
+[2026-10-31T11:37:02.390Z] test_get_message_by_id_not_found (test_app.APITestCase.test_get_message_by_id_not_found) ... [31/Oct/2026 11:37:02] "GET /messages/999 HTTP/1.1" 404 -
+[2026-10-31T11:37:02.941Z] ok
+[2026-10-31T11:37:02.941Z] test_health (test_app.APITestCase.test_health) ... [31/Oct/2026 11:37:02] "GET /health HTTP/1.1" 200 -
+[2026-10-31T11:37:03.492Z] ok
+[2026-10-31T11:37:03.492Z] test_limit_filter (test_app.APITestCase.test_limit_filter) ... [31/Oct/2026 11:37:03] "POST /messages HTTP/1.1" 201 -
+[2026-10-31T11:37:03.492Z] [31/Oct/2026 11:37:03] "POST /messages HTTP/1.1" 201 -
+[2026-10-31T11:37:03.492Z] [31/Oct/2026 11:37:03] "POST /messages HTTP/1.1" 201 -
+[2026-10-31T11:37:03.492Z] [31/Oct/2026 11:37:03] "GET /messages?limit=2 HTTP/1.1" 200 -
+[2026-10-31T11:37:04.043Z] ok
+[2026-10-31T11:37:04.043Z] test_messages_initially_empty (test_app.APITestCase.test_messages_initially_empty) ... [31/Oct/2026 11:37:03] "GET /messages HTTP/1.1" 200 -
+[2026-10-31T11:37:04.594Z] ok
+[2026-10-31T11:37:04.594Z] test_search_filter (test_app.APITestCase.test_search_filter) ... [31/Oct/2026 11:37:04] "POST /messages HTTP/1.1" 201 -
+[2026-10-31T11:37:04.594Z] [31/Oct/2026 11:37:04] "POST /messages HTTP/1.1" 201 -
+[2026-10-31T11:37:04.594Z] [31/Oct/2026 11:37:04] "POST /messages HTTP/1.1" 201 -
+[2026-10-31T11:37:04.594Z] [31/Oct/2026 11:37:04] "GET /messages?search=catatan HTTP/1.1" 200 -
+[2026-10-31T11:37:05.145Z] ok
+[2026-10-31T11:37:05.145Z] 
+[2026-10-31T11:37:05.145Z] ----------------------------------------------------------------------
+[2026-10-31T11:37:05.145Z] Ran 14 tests in 7.055s
+[2026-10-31T11:37:05.145Z] 
+[2026-10-31T11:37:05.145Z] OK
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (4. Build Docker Image)
+[Pipeline] sh
+[2026-10-31T11:37:05.468Z] + set -e
+[2026-10-31T11:37:05.468Z] + git rev-parse --short HEAD
+[2026-10-31T11:37:05.468Z] + GIT_SHORT=581d138
+[2026-10-31T11:37:05.468Z] + echo Building python-crud-api:5 and python-crud-api:581d138
+[2026-10-31T11:37:05.468Z] Building python-crud-api:5 and python-crud-api:581d138
+[2026-10-31T11:37:05.468Z] + docker build -t python-crud-api:5 -t python-crud-api:581d138 .
+[2026-10-31T11:37:05.468Z] DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+[2026-10-31T11:37:05.468Z]             Install the buildx component to build images with BuildKit:
+[2026-10-31T11:37:05.468Z]             https://docs.docker.com/go/buildx/
+[2026-10-31T11:37:05.468Z] 
+[2026-10-31T11:37:05.468Z] Sending build context to Docker daemon  14.85kB
+[2026-10-31T11:37:05.468Z] 
+[2026-10-31T11:37:05.468Z] Step 1/8 : FROM python:3.11-slim
+[2026-10-31T11:37:05.468Z]  ---> 673719e071ec
+[2026-10-31T11:37:05.468Z] Step 2/8 : ENV PYTHONUNBUFFERED=1
+[2026-10-31T11:37:05.468Z]  ---> Using cache
+[2026-10-31T11:37:05.468Z]  ---> 13efa7fc01a8
+[2026-10-31T11:37:05.468Z] Step 3/8 : ENV DATA_FILE=/var/lib/backend_data/messages.json
+[2026-10-31T11:37:05.468Z]  ---> Using cache
+[2026-10-31T11:37:05.468Z]  ---> 6361e37a79d0
+[2026-10-31T11:37:05.468Z] Step 4/8 : WORKDIR /app
+[2026-10-31T11:37:05.468Z]  ---> Using cache
+[2026-10-31T11:37:05.468Z]  ---> ffc56039adc7
+[2026-10-31T11:37:05.468Z] Step 5/8 : COPY app.py .
+[2026-10-31T11:37:05.468Z]  ---> Using cache
+[2026-10-31T11:37:05.468Z]  ---> 829043951534
+[2026-10-31T11:37:05.468Z] Step 6/8 : EXPOSE 5000
+[2026-10-31T11:37:05.468Z]  ---> Using cache
+[2026-10-31T11:37:05.468Z]  ---> adb9f08bcaf3
+[2026-10-31T11:37:05.468Z] Step 7/8 : HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3   CMD python -c "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2).status == 200 else 1)"
+[2026-10-31T11:37:05.468Z]  ---> Using cache
+[2026-10-31T11:37:05.468Z]  ---> 80f796b296cc
+[2026-10-31T11:37:05.468Z] Step 8/8 : CMD ["python", "app.py"]
+[2026-10-31T11:37:05.468Z]  ---> Using cache
+[2026-10-31T11:37:05.468Z]  ---> 628cbaaa2046
+[2026-10-31T11:37:05.468Z] Successfully built 628cbaaa2046
+[2026-10-31T11:37:05.468Z] Successfully tagged python-crud-api:5
+[2026-10-31T11:37:05.468Z] Successfully tagged python-crud-api:581d138
+[2026-10-31T11:37:05.468Z] + docker tag python-crud-api:5 python-crud-api:latest
+[2026-10-31T11:37:05.468Z] + echo 581d138
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (5. Automated Deployment)
+[Pipeline] sh
+[2026-10-31T11:37:05.794Z] + set -e
+[2026-10-31T11:37:05.794Z] + mkdir -p .deploy
+[2026-10-31T11:37:05.794Z] + docker inspect --format {{.Config.Image}} production-api-container
+[2026-10-31T11:37:05.794Z] + PREVIOUS=python-crud-api:latest
+[2026-10-31T11:37:05.794Z] + [ -n python-crud-api:latest ]
+[2026-10-31T11:37:05.794Z] + echo python-crud-api:latest
+[2026-10-31T11:37:05.794Z] + echo Previous image recorded: python-crud-api:latest
+[2026-10-31T11:37:05.794Z] Previous image recorded: python-crud-api:latest
+[2026-10-31T11:37:05.794Z] + docker stop production-api-container
+[2026-10-31T11:37:09.024Z] + docker rm production-api-container
+[2026-10-31T11:37:09.024Z] + docker volume create production-api-data
+[2026-10-31T11:37:09.024Z] + docker run -d --name production-api-container -p 5000:5000 -v production-api-data:/var/lib/backend_data --restart unless-stopped python-crud-api:latest
+[2026-10-31T11:37:09.025Z] 179dd3c597adcbc2cd2e2801796b1363ba1da6bb9a0dc31e6190e72d932b99ef
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (6. Health Check)
+[Pipeline] sh
+[2026-10-31T11:37:09.612Z] + HEALTH_URL=http://host.docker.internal:5000/health
+[2026-10-31T11:37:09.612Z] + echo Checking http://host.docker.internal:5000/health
+[2026-10-31T11:37:09.612Z] Checking http://host.docker.internal:5000/health
+[2026-10-31T11:37:09.612Z] + seq 1 15
+[2026-10-31T11:37:09.612Z] + curl -fsS http://host.docker.internal:5000/health
+[2026-10-31T11:37:09.612Z] {"status": "active", "service": "Backend API"}+ echo 
+[2026-10-31T11:37:09.612Z] 
+[2026-10-31T11:37:09.612Z] + echo Health check passed on attempt 1
+[2026-10-31T11:37:09.612Z] Health check passed on attempt 1
+[2026-10-31T11:37:09.612Z] + docker logs --tail 20 production-api-container
+[2026-10-31T11:37:09.612Z] Backend API listening on 0.0.0.0:5000
+[2026-10-31T11:37:09.612Z] [31/Oct/2026 11:37:09] "GET /health HTTP/1.1" 200 -
+[2026-10-31T11:37:09.612Z] + exit 0
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] sh
+[2026-10-31T11:37:09.964Z] + docker image prune -f --filter until=168h
+[Pipeline] echo
+[2026-10-31T11:37:09.986Z] Pipeline completed successfully.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // timestamps
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
