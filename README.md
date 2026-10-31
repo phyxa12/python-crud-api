@@ -138,17 +138,39 @@ Jangan pernah menaruh token di URL repository, `Jenkinsfile`, README, atau scree
 ### 3. Job pipeline
 
 1. `New Item` -> nama `python-crud-api-pipeline` -> tipe `Pipeline`.
-2. `Build Triggers` -> centang `GitHub hook trigger for GITScm polling`.
+2. `Build Triggers` -> centang **dua** opsi:
+   - `GitHub hook trigger for GITScm polling`
+   - `Poll SCM` dengan jadwal mis. `H/5 * * * *`
+
+   Keduanya diperlukan. Pada Jenkins modern, handler webhook GitHub hanya "memoking"
+   polling SCM milik job; jika job tidak punya trigger `Poll SCM`, poke tersebut tidak
+   menghasilkan build (endpoint `/poll` bahkan 404). Ini teramati langsung saat praktikum.
 3. `Pipeline` -> `Pipeline script from SCM`, SCM `Git`.
 4. Isi `Repository URL`, pilih `Credentials`, `Branch Specifier` = `*/main`,
    `Script Path` = `Jenkinsfile`.
 5. `Save`, lalu `Build Now` untuk validasi pertama.
 
+Jika Jenkins berjalan di dalam container, health check harus menargetkan host, bukan
+`localhost` milik container Jenkins:
+
+```bash
+docker run ... \
+  --add-host=host.docker.internal:host-gateway \
+  -e HEALTH_URL=http://host.docker.internal:5000/health \
+  ...
+```
+
+`Jenkinsfile` memakai `${HEALTH_URL:-http://localhost:5000/health}`, sehingga default
+panduan tetap berlaku ketika Jenkins berjalan langsung di host.
+
+Skrip inisialisasi otomatis (admin, credential, job) tersedia pada `jenkins/init.groovy.d/`
+dan dapat dipasang ke `/var/jenkins_home/init.groovy.d` bila tidak ingin mengisi form UI.
+
 ### 4. Webhook lewat ngrok
 
 ```bash
 ngrok config add-authtoken "<NGROK_AUTHTOKEN>"
-ngrok http 8080
+ngrok http 8080     # sesuaikan dengan port host Jenkins, mis. 8081 pada lab ini
 ```
 
 Di GitHub: `Settings` -> `Webhooks` -> `Add webhook`.
@@ -160,6 +182,10 @@ Di GitHub: `Settings` -> `Webhooks` -> `Add webhook`.
 - Event: `Just the push event`
 
 Uji dengan push kecil ke `main`; build harus terpicu tanpa `Build Now`.
+
+Alternatif tanpa akun ngrok: `cloudflared tunnel --url http://localhost:8081` pada Cloudflare
+memberi URL HTTPS sementara dengan perilaku yang sama (dipakai untuk membuktikan webhook pada
+praktikum ini karena ngrok mewajibkan authtoken).
 
 ## Tahap pipeline
 
