@@ -1,0 +1,18 @@
+Jenkins job status
+job: python-crud-api-pipeline
+url: http://localhost:8081/job/python-crud-api-pipeline/
+scm: git@github.com:phyxa12/python-crud-api.git  branch: */main  script: Jenkinsfile
+triggers: GitHub hook trigger for GITScm polling; Poll SCM (H/5 * * * *)
+
+builds:
+  #1 result=FAILURE duration=4.2s cause=Started from command line by admin
+  #2 result=FAILURE duration=87.1s cause=Started from command line by admin
+  #3 result=FAILURE duration=4.2s cause=Started from command line by admin
+  #4 result=SUCCESS duration=27.3s cause=Started from command line by admin
+  #5 result=SUCCESS duration=22.8s cause=Started by GitHub push by phyxa12
+  #6 result=FAILURE duration=7.6s cause=Started from command line by admin
+  #7 result=SUCCESS duration=22.7s cause=Started from command line by admin
+
+credentials (id only, values never printed):
+  id=github-deploy-readonly type=SSH Username with private key
+  id=github-webhook-secret type=Secret text
