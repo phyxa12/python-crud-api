@@ -3,7 +3,7 @@
 **Nama:** Faiz Aditia Zain
 **NIM:** 101012330071
 **Mata Kuliah:** Cloud Computing
-**Kelas:** _(isi sesuai kelas praktikum)_
+**Kelas:** TT-47-05
 
 **Proyek:** `python-crud-api`
 **Sumber tugas:** `CC-2/CICD_Jenkins.pdf` (Hands-On Praktikum CI/CD)
