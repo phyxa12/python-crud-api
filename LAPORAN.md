@@ -487,6 +487,12 @@ aplikasi menulis ke lokasi lain di dalam container.
 | `Bukti/04_webhook_delivery.log` | GitHub webhook config + daftar delivery (200 OK) |
 | `Bukti/05_jenkins_status.txt` | ringkasan job, trigger, riwayat build, dan credential (ID saja) |
 | `Bukti/06_persistence_jenkins_redeploy.log` | data tetap ada setelah redeploy oleh Jenkins |
+| `Bukti/screenshots/01_jenkins_job.png` | job pipeline, seluruh stage hijau, riwayat build #1–#7 |
+| `Bukti/screenshots/02_jenkins_build7_stages.png` | detail build #7 (stage view) |
+| `Bukti/screenshots/03_jenkins_build5_webhook.png` | build #5: "Started by GitHub push by phyxa12" |
+| `Bukti/screenshots/04_jenkins_build5_console.png` | console output build #5 |
+| `Bukti/screenshots/05_jenkins_triggers.png` | konfigurasi trigger dan SCM pada job |
+| `Bukti/screenshots/06_jenkins_credentials.png` | daftar credential (nilai tidak ditampilkan) |
 
 Instance Jenkins masih berjalan di `http://localhost:8081` (admin password tersimpan lokal di
 file sementara, tidak di repository) untuk keperluan screenshot. Hentikan dengan:
@@ -498,3 +504,32 @@ docker stop jenkins-server
 Untuk screenshot: halaman build sukses ada di
 `http://localhost:8081/job/python-crud-api-pipeline/7/`, sedangkan bukti webhook dapat
 diambil dari `Settings` → `Webhooks` saat webhook dibuat ulang (langkah 7.3).
+
+---
+
+## 13. Lampiran — screenshot
+
+Job pipeline dengan seluruh stage hijau dan riwayat build #1–#7:
+
+![Job pipeline](Bukti/screenshots/01_jenkins_job.png)
+
+Build #5 dipicu otomatis oleh push GitHub (`Started by GitHub push by phyxa12`), commit
+`581d138`, hasil SUCCESS:
+
+![Build webhook](Bukti/screenshots/03_jenkins_build5_webhook.png)
+
+Detail stage build #7 (redeploy untuk uji persistensi):
+
+![Stage build 7](Bukti/screenshots/02_jenkins_build7_stages.png)
+
+Console output build #5:
+
+![Console build 5](Bukti/screenshots/04_jenkins_build5_console.png)
+
+Konfigurasi trigger (GitHub hook + Poll SCM) dan sumber SCM:
+
+![Trigger job](Bukti/screenshots/05_jenkins_triggers.png)
+
+Credential yang tersimpan (nilai tidak pernah ditampilkan):
+
+![Credentials](Bukti/screenshots/06_jenkins_credentials.png)
