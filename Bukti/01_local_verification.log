@@ -1,10 +1,4 @@
 == 1. Build image ==
-bash.exe : #0 building with "desktop-linux" instance using docker driver
-At line:4 char:1
-+ & 'C:\Program Files\Git\bin\bash.exe' scripts/local_verify.sh 2>&1 |  ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (#0 building wit...g docker driver:String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
  
 
 #1 [internal] load build definition from Dockerfile
