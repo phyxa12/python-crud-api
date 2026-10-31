@@ -3,7 +3,7 @@
 **Nama:** Faiz Aditia Zain
 **NIM:** 101012330071
 **Mata Kuliah:** Cloud Computing
-**Kelas:** TT-47-05
+**Kelas:** TT-47-05 (47-REG-GAB01)
 
 **Proyek:** `python-crud-api`
 **Sumber tugas:** `CC-2/CICD_Jenkins.pdf` (Hands-On Praktikum CI/CD)
@@ -503,10 +503,7 @@ aplikasi menulis ke lokasi lain di dalam container.
 | `Bukti/screenshots/06_jenkins_credentials.png` | daftar credential (nilai tidak ditampilkan) |
 | `Bukti/screenshots/07_jenkins_polling_log.png` | log polling SCM (revisi terakhir dan hasil polling) |
 | `Bukti/screenshots/08_jenkins_build8_scm.png` | build #8 dari polling otomatis ("Started by an SCM change") |
-
-Screenshot halaman GitHub *Recent Deliveries* tidak dapat diambil otomatis karena mesin ini
-tidak memiliki sesi login GitHub; gunakan `scripts/capture_webhook_screenshot.py` atau ambil
-manual (lihat bagian 7.3).
+| `Bukti/screenshots/09_github_webhook_deliveries.png` | GitHub Webhook *Recent Deliveries* (response `200 OK`) |
 
 Instance Jenkins lab masih berjalan di `http://localhost:8081` selama pengerjaan (password
 admin disimpan lokal pada `CC-2/jenkins-lab-credentials.txt`, bukan di repository). Hentikan
@@ -515,11 +512,6 @@ dengan:
 ```bash
 docker stop jenkins-server
 ```
-
-Screenshot halaman GitHub *Recent Deliveries* memerlukan sesi login GitHub. Bila screenshot
-belum tersedia saat submit, jalankan `python3 scripts/capture_webhook_screenshot.py` (browser
-terbuka, login, lalu skrip menyimpan screenshot), atau ambil manual melalui
-`Settings` → `Webhooks` → pilih hook → `Recent Deliveries`.
 
 ---
 
@@ -557,3 +549,7 @@ Log polling SCM (revisi terakhir yang dibangun dan hasil pemeriksaan remote):
 Build #8 terpicu otomatis oleh polling (`Started by an SCM change`):
 
 ![Build 8](Bukti/screenshots/08_jenkins_build8_scm.png)
+
+GitHub Webhook *Recent Deliveries* dengan response sukses (`200 OK`) pengiriman event `push`:
+
+![GitHub Webhook Recent Deliveries](Bukti/screenshots/09_github_webhook_deliveries.png)
