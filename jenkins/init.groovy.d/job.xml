@@ -11,7 +11,7 @@
       <configVersion>2</configVersion>
       <userRemoteConfigs>
         <hudson.plugins.git.UserRemoteConfig>
-          <url>git@github.com/USERNAME/python-crud-api.git</url>
+          <url>git@github.com:USERNAME/python-crud-api.git</url>
           <credentialsId>github-deploy-readonly</credentialsId>
         </hudson.plugins.git.UserRemoteConfig>
       </userRemoteConfigs>

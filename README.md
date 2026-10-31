@@ -187,6 +187,12 @@ Alternatif tanpa akun ngrok: `cloudflared tunnel --url http://localhost:8081` pa
 memberi URL HTTPS sementara dengan perilaku yang sama (dipakai untuk membuktikan webhook pada
 praktikum ini karena ngrok mewajibkan authtoken).
 
+Screenshot halaman `Recent Deliveries` dapat diambil otomatis setelah login GitHub:
+
+```bash
+python3 scripts/capture_webhook_screenshot.py
+```
+
 ## Tahap pipeline
 
 | Stage | Isi |
@@ -206,6 +212,9 @@ praktikum ini karena ngrok mewajibkan authtoken).
 | `docker: command not found` | Docker CLI tidak ada di agent | Pakai `jenkins/Dockerfile` pada repo ini |
 | `Cannot connect to the Docker daemon` | Socket tidak terpasang | Mount `/var/run/docker.sock`, cek `docker exec jenkins-server docker ps` |
 | Webhook tidak memicu job | Tunnel mati / URL salah | Pastikan ngrok aktif dan path `/github-webhook/` |
+| Webhook 200 tetapi tidak ada build | Job tidak punya trigger `Poll SCM` | Tambahkan `Poll SCM` (`H/5 * * * *`) di samping GitHub hook trigger |
+| `Could not resolve hostname github.com` | DNS container belum siap | Ulangi build; cek `docker exec jenkins-server getent hosts github.com` |
+| Health check gagal padahal container `healthy` | `localhost` di dalam container Jenkins | Set `HEALTH_URL=http://host.docker.internal:5000/health` |
 | Port 5000 sudah dipakai | Container lain | `docker ps`, hentikan container konflik atau ubah `PORT_MAPPING` |
 | Pesan hilang setelah redeploy | Volume salah path | Pastikan `-v production-api-data:/var/lib/backend_data` |
 | Health check gagal | Container crash | `docker logs production-api-container` |

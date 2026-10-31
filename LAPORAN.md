@@ -1,8 +1,13 @@
 # Laporan Praktikum CI/CD — Jenkins, GitHub, Docker, dan ngrok
 
+**Nama:** Faiz Aditia Zain
+**NIM:** 101012330071
+**Mata Kuliah:** Cloud Computing
+**Kelas:** _(isi sesuai kelas praktikum)_
+
 **Proyek:** `python-crud-api`
 **Sumber tugas:** `CC-2/CICD_Jenkins.pdf` (Hands-On Praktikum CI/CD)
-**Repository:** https://github.com/phyxa12/python-crud-api (private)
+**Repository:** https://github.com/phyxa12/python-crud-api (public)
 **Environment eksekusi:** Windows 11 + PowerShell 5.1, Docker Desktop 29.7.2 (Linux containers),
 Jenkins 2.541.3 LTS di container, Python 3.11 (image) / 3.12 (host), Git 2.51.
 
@@ -15,7 +20,7 @@ Jenkins 2.541.3 LTS di container, Python 3.11 (image) / 3.12 (host), Git 2.51.
 | A — Implementasi dasar (repo, Jenkins checkout, syntax check, build image, run, health check) | Selesai | `Bukti/02_jenkins_build_console.log`, `Bukti/01_local_verification.log` |
 | B — Webhook otomatis lewat tunnel HTTPS | Selesai diuji dengan `cloudflared` quick tunnel (ngrok butuh authtoken akun Anda) | `Bukti/04_webhook_delivery.log`, `Bukti/03_webhook_triggered_build.log` |
 | C — Persistensi data dengan named volume | Selesai | `Bukti/01_local_verification.log` bagian 9 |
-| D — Perbaikan/pengembangan (minimal dua) | Selesai 7 dari 7 opsi | Bagian 5 laporan ini |
+| D — Perbaikan/pengembangan (minimal dua) | Selesai 7 dari 7 opsi | Bagian 6 laporan ini |
 | Pertanyaan analisis | Selesai (8 pertanyaan) | Bagian 8 |
 
 Ringkasnya: repository berisi API Python tanpa dependency eksternal, 14 unit test, Dockerfile
@@ -82,16 +87,9 @@ python-crud-api/
 └── LAPORAN.md
 ```
 
-Commit history (bertahap, bukan satu commit besar):
-
-```
-581d138 test: trigger GitHub webhook (second attempt)
-6f4f0d4 test: trigger GitHub webhook
-69278b9 fix: make health check target configurable for containerized Jenkins
-7205000 ci: add Jenkins pipeline with lint, tests, SHA tag and rollback
-d9a1bf8 test: add API tests and end-to-end local verification script
-7a4c9fe feat: add Python CRUD API and Docker image
-```
+Commit history disusun bertahap (bukan satu commit besar), dengan pesan berawalan
+`feat:`, `test:`, `ci:`, `fix:`, dan `docs:`. Riwayat lengkap dapat dilihat pada halaman
+`/commits/main` repository.
 
 ---
 
@@ -147,6 +145,8 @@ Riwayat build pada instance lab (dari `Bukti/05_jenkins_status.txt`):
 #5 SUCCESS  22.8s  Started by GitHub push by phyxa12   (webhook, Tugas B)
 #6 FAILURE  7.6s   Started from command line by admin   (DNS transien saat checkout)
 #7 SUCCESS  22.7s  Started from command line by admin   (redeploy untuk Tugas C)
+#8 SUCCESS  23.3s  Started by an SCM change             (polling otomatis)
+#9 SUCCESS  24.5s  Started by an SCM change             (polling otomatis)
 ```
 
 ---
@@ -284,6 +284,14 @@ tanpa `Build Now`. Periksa `Recent Deliveries` (response `200`).
 autentikasi, gunakan password kuat, dan hentikan tunnel setelah pengujian. URL ngrok gratis
 berubah setiap agent dijalankan ulang, sehingga Payload URL harus diperbarui (lihat jawaban
 analisis nomor 5).
+
+### 7.4 Catatan kesesuaian dengan panduan
+
+| Aspek panduan | Yang dipakai | Alasan dan cara menyamakan |
+| --- | --- | --- |
+| Tunnel ngrok | Cloudflare quick tunnel | ngrok mewajibkan authtoken akun; mekanisme URL HTTPS → `/github-webhook/` identik. Langkah ngrok ada di 7.3 dan dapat dipakai tanpa mengubah Jenkins. |
+| PAT fine-grained (HTTPS) | SSH deploy key read-only | Sama-sama read-only dan disimpan sebagai Jenkins credential; deploy key hanya berlaku untuk satu repository dan tidak terikat akun. Untuk memakai PAT: buat token dengan `Contents: Read-only`, tambahkan credential `github-pat-readonly` (Username with password), lalu ubah URL job ke HTTPS — `Jenkinsfile` tidak berubah karena memakai `checkout scm`. |
+| Repository private | Repository public | Agar dapat diperiksa tanpa mengundang akun dosen/asisten. Tidak ada secret di repository (token, kunci, dan password hanya ada di Jenkins credential serta file lokal di luar repo). Kembalikan dengan `gh repo edit phyxa12/python-crud-api --visibility private`. |
 
 ---
 
@@ -493,17 +501,25 @@ aplikasi menulis ke lokasi lain di dalam container.
 | `Bukti/screenshots/04_jenkins_build5_console.png` | console output build #5 |
 | `Bukti/screenshots/05_jenkins_triggers.png` | konfigurasi trigger dan SCM pada job |
 | `Bukti/screenshots/06_jenkins_credentials.png` | daftar credential (nilai tidak ditampilkan) |
+| `Bukti/screenshots/07_jenkins_polling_log.png` | log polling SCM (revisi terakhir dan hasil polling) |
+| `Bukti/screenshots/08_jenkins_build8_scm.png` | build #8 dari polling otomatis ("Started by an SCM change") |
 
-Instance Jenkins masih berjalan di `http://localhost:8081` (admin password tersimpan lokal di
-file sementara, tidak di repository) untuk keperluan screenshot. Hentikan dengan:
+Screenshot halaman GitHub *Recent Deliveries* tidak dapat diambil otomatis karena mesin ini
+tidak memiliki sesi login GitHub; gunakan `scripts/capture_webhook_screenshot.py` atau ambil
+manual (lihat bagian 7.3).
+
+Instance Jenkins lab masih berjalan di `http://localhost:8081` selama pengerjaan (password
+admin disimpan lokal pada `CC-2/jenkins-lab-credentials.txt`, bukan di repository). Hentikan
+dengan:
 
 ```bash
 docker stop jenkins-server
 ```
 
-Untuk screenshot: halaman build sukses ada di
-`http://localhost:8081/job/python-crud-api-pipeline/7/`, sedangkan bukti webhook dapat
-diambil dari `Settings` → `Webhooks` saat webhook dibuat ulang (langkah 7.3).
+Screenshot halaman GitHub *Recent Deliveries* memerlukan sesi login GitHub. Bila screenshot
+belum tersedia saat submit, jalankan `python3 scripts/capture_webhook_screenshot.py` (browser
+terbuka, login, lalu skrip menyimpan screenshot), atau ambil manual melalui
+`Settings` → `Webhooks` → pilih hook → `Recent Deliveries`.
 
 ---
 
@@ -533,3 +549,11 @@ Konfigurasi trigger (GitHub hook + Poll SCM) dan sumber SCM:
 Credential yang tersimpan (nilai tidak pernah ditampilkan):
 
 ![Credentials](Bukti/screenshots/06_jenkins_credentials.png)
+
+Log polling SCM (revisi terakhir yang dibangun dan hasil pemeriksaan remote):
+
+![Polling log](Bukti/screenshots/07_jenkins_polling_log.png)
+
+Build #8 terpicu otomatis oleh polling (`Started by an SCM change`):
+
+![Build 8](Bukti/screenshots/08_jenkins_build8_scm.png)
