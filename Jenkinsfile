@@ -76,8 +76,10 @@ pipeline {
         stage('6. Health Check') {
             steps {
                 sh '''
+                    HEALTH_URL=${HEALTH_URL:-http://localhost:5000/health}
+                    echo "Checking ${HEALTH_URL}"
                     for attempt in $(seq 1 15); do
-                        if curl -fsS http://localhost:5000/health; then
+                        if curl -fsS "${HEALTH_URL}"; then
                             echo ""
                             echo "Health check passed on attempt ${attempt}"
                             docker logs --tail 20 ${CONTAINER_NAME}
