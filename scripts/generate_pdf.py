@@ -1,4 +1,4 @@
-"""Render LAPORAN.md menjadi PDF bergaya dokumen CD-1 Universitas Telkom.
+﻿"""Render LAPORAN.md menjadi PDF bergaya dokumen CD-1 Universitas Telkom.
 
 Gaya: Times New Roman 12 pt, rata kiri-kanan, spasi 1,5, indentasi paragraf,
 nomor halaman di kanan atas, kop kaki institusi, dan halaman sampul.
@@ -22,7 +22,7 @@ TITLE = (
 )
 
 CSS = """
-@page { size: A4; margin: 25mm 25mm 33mm 25mm; }
+@page { size: A4; margin: 25mm 25mm 25mm 25mm; }
 html, body { margin: 0; padding: 0; }
 body {
   font-family: "Times New Roman", Times, serif;
@@ -62,7 +62,7 @@ figure img { max-width: 100%; max-height: 115mm; border: 0.75pt solid #999; }
 figcaption { font-size: 11pt; line-height: 1.3; text-align: center; margin-top: 3pt; text-indent: 0; }
 a { color: #000; text-decoration: none; }
 /* sampul */
-.cover { height: 232mm; text-align: center; page-break-after: always; break-after: page;
+.cover { height: 236mm; text-align: center; page-break-after: always; break-after: page;
   position: relative; }
 .cover p { text-indent: 0; text-align: center; line-height: 1.25; margin: 0; }
 .cover .doc { font-weight: bold; margin-top: 6mm; }
@@ -174,10 +174,7 @@ def main():
             "text-align:right;padding-right:25mm;margin-top:8mm;\">"
             "<span class='pageNumber'></span></div>"
         )
-        footer = (
-            "<div style='width:100%;margin:0;padding:0;font-size:0;'>"
-            f"<img src='data:image/png;base64,{footer_img}' style='width:100%;display:block;'></div>"
-        )
+        footer = "<div></div>"
         with sync_playwright() as p:
             browser = p.chromium.launch(channel="msedge", headless=True)
             page = browser.new_page()
@@ -191,7 +188,7 @@ def main():
                 path=str(pdf_tmp), format="A4", print_background=True,
                 display_header_footer=True, header_template=header,
                 footer_template=footer,
-                margin={"top": "25mm", "bottom": "33mm", "left": "25mm", "right": "25mm"},
+                margin={"top": "25mm", "bottom": "25mm", "left": "25mm", "right": "25mm"},
             )
             browser.close()
 
@@ -200,7 +197,6 @@ def main():
         pg = doc[0]
         r = pg.rect
         pg.draw_rect(fitz.Rect(0, 0, r.width, 60), color=None, fill=(1, 1, 1))
-        pg.draw_rect(fitz.Rect(0, r.height - 100, r.width, r.height), color=None, fill=(1, 1, 1))
         doc.set_metadata({"title": "Laporan Praktikum CI/CD — python-crud-api",
                           "author": ident.get("Nama", "")})
         for t in targets:
