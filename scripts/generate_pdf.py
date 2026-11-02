@@ -116,7 +116,16 @@ def main():
         css_file.write_text(REPORT_CSS, encoding="utf-8")
         print("Menjalankan pandoc...")
         subprocess.run(
-            ["pandoc", str(LAPORAN_MD), "-s", f"--css={css_file}", "-o", str(html_file)],
+            [
+                "pandoc",
+                "-f",
+                "markdown-fancy_lists-task_lists",
+                str(LAPORAN_MD),
+                "-s",
+                f"--css={css_file}",
+                "-o",
+                str(html_file),
+            ],
             cwd=str(ROOT),
             check=True,
         )

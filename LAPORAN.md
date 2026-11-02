@@ -29,7 +29,7 @@ Pemenuhan seluruh spesifikasi teknis yang ditetapkan pada panduan praktikum — 
 
 *Sumber: disintesis dari spesifikasi panduan praktikum dan hasil pengujian pada direktori `Bukti/`.*
 
-Secara arsitektural, repositori proyek `python-crud-api` mengimplementasikan layanan antarmuka pemrograman aplikasi (API) berbasis Python murni tanpa ketergantungan pustaka pihak ketiga, dilengkapi dengan 14 pengujian unit otomatis (*unit test*), berkas `Dockerfile` yang mengintegrasikan instruksi `HEALTHCHECK`, serta definisi *pipeline-as-code* pada `Jenkinsfile`. Alur kerja otomatisasi tersebut mengeksekusi tahapan pemeriksaan kualitas kode (*lint*) → pengujian unit (*test*) → pembangunan citra kontainer (*build* dengan penanda nomor pembangunan dan *commit* SHA) → penerapan layanan (*deploy*) → pemeriksaan kesehatan layanan (*health check*) → serta pemulihan otomatis (*automated rollback*) apabila terdeteksi kegagalan pasca-penerapan. Seluruh rangkaian *pipeline* dieksekusi oleh instans Jenkins yang mengakuisisi kode sumber secara langsung dari repositori GitHub menggunakan kredensial *deploy key* bersifat *read-only*, sehingga integritas kode sumber dan keamanan akses repositori tetap terjaga sepanjang siklus hidup penerapan.
+Secara arsitektural, repositori proyek `python-crud-api` mengimplementasikan layanan antarmuka pemrograman aplikasi (API) berbasis Python murni tanpa ketergantungan pustaka pihak ketiga, dilengkapi dengan 14 pengujian unit otomatis (*unit test*), berkas `Dockerfile` yang mengintegrasikan instruksi `HEALTHCHECK`, serta definisi *pipeline-as-code* pada `Jenkinsfile`. Alur kerja otomatisasi tersebut mengeksekusi tahapan pemeriksaan kualitas kode (*lint*), diikuti oleh pengujian unit (*test*), pembangunan citra kontainer (*build* dengan penanda nomor pembangunan dan *commit* SHA), penerapan layanan (*deploy*), pemeriksaan kesehatan layanan (*health check*), hingga pemulihan otomatis (*automated rollback*) apabila terdeteksi kegagalan pasca-penerapan. Seluruh rangkaian *pipeline* dieksekusi oleh instans Jenkins yang mengakuisisi kode sumber secara langsung dari repositori GitHub menggunakan kredensial *deploy key* bersifat *read-only*, sehingga integritas kode sumber dan keamanan akses repositori tetap terjaga sepanjang siklus hidup penerapan.
 
 ---
 
@@ -62,7 +62,7 @@ Berdasarkan topologi aliran kerja tersebut, setiap komponen infrastruktur memili
 
 | Komponen | Port / lokasi | Peran |
 | --- | --- | --- |
-| Jenkins UI | *host* `localhost:8081` → kontainer `8080` | Konfigurasi *job*, *credential*, eksekusi *build*, dan *console output* |
+| Jenkins UI | *host* `localhost:8081` menuju kontainer `8080` | Konfigurasi *job*, *credential*, eksekusi *build*, dan *console output* |
 | Python API | `localhost:5000` | Layanan REST API untuk titik akhir *health* dan *messages* |
 | Tunnel | URL HTTPS sementara | Meneruskan muatan *webhook* GitHub publik ke instans Jenkins lokal |
 | Docker volume | `production-api-data` | Menyimpan berkas `messages.json` secara persisten di luar *lifecycle* kontainer |
@@ -304,7 +304,7 @@ ngrok config add-authtoken "<AUTHTOKEN_ANDA>"
 ngrok http 8081
 ```
 
-Setelah agen `ngrok` menampilkan alamat penerusan HTTPS publik, pendaftaran *webhook* dilakukan melalui antarmuka GitHub pada menu `Settings` → `Webhooks` → `Add webhook` dengan menerapkan empat parameter konfigurasi. Pertama, kolom *Payload URL* diisi dengan alamat `https://<domain-ngrok>/github-webhook/` (wajib diakhiri dengan garis miring `/github-webhook/`). Kedua, kolom *Content type* ditetapkan ke format `application/json`. Ketiga, kolom *Secret* diisi dengan rangkaian karakter acak yang identik dengan nilai pada kredensial Jenkins `github-webhook-secret`. Keempat, cakupan pemicu diatur pada opsi `Just the push event`. Verifikasi kemudian dapat dilakukan dengan menjalankan perintah `echo "Webhook test $(date)" >> README.md`, melakukan komit, dan mengirimkannya ke cabang `main`, di mana *build* baru akan terpicu secara otomatis dan tab `Recent Deliveries` pada GitHub akan menampilkan kode respons `200`.
+Setelah agen `ngrok` menampilkan alamat penerusan HTTPS publik, pendaftaran *webhook* dilakukan melalui antarmuka GitHub pada menu `Settings`, diikuti oleh `Webhooks`, hingga `Add webhook` dengan menerapkan empat parameter konfigurasi. Pertama, kolom *Payload URL* diisi dengan alamat `https://<domain-ngrok>/github-webhook/` (wajib diakhiri dengan garis miring `/github-webhook/`). Kedua, kolom *Content type* ditetapkan ke format `application/json`. Ketiga, kolom *Secret* diisi dengan rangkaian karakter acak yang identik dengan nilai pada kredensial Jenkins `github-webhook-secret`. Keempat, cakupan pemicu diatur pada opsi `Just the push event`. Verifikasi kemudian dapat dilakukan dengan menjalankan perintah `echo "Webhook test $(date)" >> README.md`, melakukan komit, dan mengirimkannya ke cabang `main`, di mana *build* baru akan terpicu secara otomatis dan tab `Recent Deliveries` pada GitHub akan menampilkan kode respons `200`.
 
 Sebagai langkah pengamanan operasional, perlu diperhatikan bahwa selama terowongan publik berada dalam kondisi aktif, antarmuka Jenkins dapat diakses dari jaringan internet; oleh karena itu, mekanisme autentikasi Jenkins tidak boleh dinonaktifkan, kata sandi akun administrator harus memiliki kompleksitas tinggi, dan proses terowongan harus segera dihentikan setelah sesi pengujian berakhir. Selain itu, paket layanan `ngrok` tidak berbayar akan membangkitkan nama domain acak baru setiap kali agen dimulai ulang, sehingga nilai *Payload URL* pada pengaturan GitHub wajib diperbarui mengikuti domain terbaru sebagaimana dianalisis lebih lanjut pada Subbab 8.5.
 
@@ -359,7 +359,7 @@ Di dalam arsitektur CI/CD terdistribusi, *GitHub Personal Access Token* (PAT), *
 | Aspek | GitHub PAT | Webhook secret | ngrok authtoken |
 | --- | --- | --- | --- |
 | Fungsi | Otorisasi hak akses baca/tulis ke repositori atau API GitHub | Membuktikan keaslian muatan *webhook* benar berasal dari GitHub melalui HMAC-SHA256 | Mengautentikasi agen klien `ngrok` lokal terhadap akun layanan `ngrok` |
-| Arah pemakaian | Jenkins → GitHub (saat operasi `git fetch`) | GitHub → Jenkins (melalui tajuk `X-Hub-Signature-256`) | Agen `ngrok` lokal → layanan *cloud* `ngrok` |
+| Arah pemakaian | Jenkins menuju GitHub (saat operasi `git fetch`) | GitHub menuju Jenkins (melalui tajuk `X-Hub-Signature-256`) | Agen `ngrok` lokal menuju layanan *cloud* `ngrok` |
 | Sifat | Kredensial identitas pengguna/aplikasi dengan cakupan izin (*scope*) | Kunci rahasia bersama (*shared secret*) bersifat simetris | Kredensial otorisasi sesi terowongan akun |
 | Jika bocor | Pihak tidak berwenang dapat membaca atau memodifikasi repositori sesuai *scope* | Penyerang dapat memalsukan muatan *webhook* dan memicu eksekusi *build* palsu | Pihak lain dapat menyalahgunakan kuota dan membuka terowongan atas nama akun pemilik |
 | Penyimpanan | Brankas terenkripsi Jenkins Credentials | Jenkins Credentials serta kolom *Secret* pada pengaturan *webhook* GitHub | Berkas konfigurasi lokal agen `ngrok` (`ngrok.yml`) |
@@ -434,7 +434,7 @@ Untuk memastikan seluruh spesifikasi fungsional pada tugas dasar maupun tugas pe
 | Filter | `GET /messages?search=kedua` | Mengembalikan daftar terfilter dengan nilai `total: 1` |
 | Delete valid | `DELETE /messages?index=0` | Kode status `200`, elemen pada indeks ke-0 berhasil dihapus |
 | Delete di luar rentang | `DELETE /messages?index=999` | Kode status `404` (indeks di luar batas panjang daftar) |
-| Persistence | *create* → *redeploy* → `GET` | Rekaman pesan tetap tersedia utuh pasca-pergantian kontainer |
+| Persistence | *create* diikuti oleh *redeploy* hingga `GET` | Rekaman pesan tetap tersedia utuh pasca-pergantian kontainer |
 | HEALTHCHECK | `docker inspect --format '{{.State.Health.Status}}'` | Status kesehatan kontainer tercatat `healthy` |
 | Unit test | `python3 -m unittest -v test_app.py` | Seluruh 14 kasus pengujian lulus (`OK`) |
 | Lint | `ruff check app.py test_app.py` | Pemeriksaan lulus sepenuhnya (`All checks passed`) |
@@ -510,17 +510,23 @@ Selama proses pembangunan infrastruktur laboratorium, integrasi *pipeline*, hing
 
 ## **11 Verifikasi Kelengkapan Pengumpulan**
 
-Sebagai langkah kendali mutu akhir sebelum penyerahan laporan, seluruh kriteria keberhasilan teknis dan keamanan yang dipersyaratkan pada panduan praktikum telah diverifikasi ketercapaiannya melalui daftar periksa berikut:
+Sebagai langkah kendali mutu akhir sebelum penyerahan laporan, seluruh kriteria keberhasilan teknis dan keamanan yang dipersyaratkan pada panduan praktikum telah diverifikasi ketercapaiannya dan dirangkum pada Tabel 11.1.
 
-- [x] Repository GitHub dapat diakses akun yang dipakai Jenkins (deploy key *read-only*).
-- [x] Kredensial bersifat *minimum-privilege* dan tersimpan di Jenkins Credentials.
-- [x] Tidak ada token/password di *source code*, *commit*, atau dokumen.
-- [x] `Jenkinsfile` berada di *root repository*; *job* memakai `Pipeline script from SCM`.
-- [x] Build berhasil dari *checkout* sampai *health check*.
-- [x] Tunnel HTTPS aktif saat pengujian dan *webhook* mengarah ke `/github-webhook/` (dibuktikan dengan `cloudflared`; langkah `ngrok` ada di bagian 7.3).
-- [x] Push baru memicu *build* otomatis (*build* #5, *cause* "Started by GitHub push").
-- [x] API CRUD berjalan dan data tetap ada setelah *redeploy*.
-- [x] Bukti praktikum disertakan pada folder `Bukti/`.
+**Tabel 11.1** Verifikasi pemenuhan kriteria keberhasilan teknis dan keamanan praktikum
+
+| No | Kriteria keberhasilan dan keamanan | Status | Bukti verifikasi |
+| --- | --- | --- | --- |
+| (1) | Repository GitHub dapat diakses akun yang dipakai Jenkins (deploy key *read-only*) | Terpenuhi | `Bukti/02_jenkins_build_console.log` |
+| (2) | Kredensial bersifat *minimum-privilege* dan tersimpan di Jenkins Credentials | Terpenuhi | `Bukti/05_jenkins_status.txt`, `Bukti/screenshots/06_jenkins_credentials.png` |
+| (3) | Tidak ada token/password di *source code*, *commit*, atau dokumen | Terpenuhi | Audit kode sumber repositori dan `jenkins/init.groovy.d/` |
+| (4) | `Jenkinsfile` berada di *root repository*; *job* memakai `Pipeline script from SCM` | Terpenuhi | `Jenkinsfile`, `Bukti/screenshots/05_jenkins_triggers.png` |
+| (5) | Build berhasil dari *checkout* sampai *health check* | Terpenuhi | `Bukti/02_jenkins_build_console.log` (*build* `#4`, `#5`, `#7`, `#8`, `#9`) |
+| (6) | Tunnel HTTPS aktif saat pengujian dan *webhook* mengarah ke `/github-webhook/` (dibuktikan dengan `cloudflared`; langkah `ngrok` ada di bagian 7.3) | Terpenuhi | `Bukti/04_webhook_delivery.log`, Subbab 7.3 |
+| (7) | Push baru memicu *build* otomatis (*build* #5, *cause* "Started by GitHub push") | Terpenuhi | `Bukti/03_webhook_triggered_build.log`, `Bukti/screenshots/03_jenkins_build5_webhook.png` |
+| (8) | API CRUD berjalan dan data tetap ada setelah *redeploy* | Terpenuhi | `Bukti/01_local_verification.log`, `Bukti/06_persistence_jenkins_redeploy.log` |
+| (9) | Bukti praktikum disertakan pada folder `Bukti/` | Terpenuhi | Direktori `Bukti/` (`00_...` s.d. `06_...` dan `screenshots/01_...` s.d. `10_...`) |
+
+*Sumber: disintesis dari daftar periksa panduan praktikum dan artefak pengujian pada direktori `Bukti/`.*
 
 ---
 
