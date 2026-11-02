@@ -3,7 +3,7 @@
 **Nama:** Faiz Aditia Zain
 **NIM:** 101012330071
 **Mata Kuliah:** Cloud Computing
-**Kelas:** TT-47-05
+**Kelas:** TT-47-05 (47-REG-GAB01)
 
 **Proyek:** `python-crud-api`
 **Sumber tugas:** `CC-2/CICD_Jenkins.pdf` (Hands-On Praktikum CI/CD)
@@ -149,6 +149,46 @@ Riwayat build pada instance lab (dari `Bukti/05_jenkins_status.txt`):
 #9 SUCCESS  24.5s  Started by an SCM change             (polling otomatis)
 ```
 
+Kutipan Console Output pipeline (dari `Bukti/03_webhook_triggered_build.log`, memperlihatkan checkout, lint, syntax check & unit test, build image, automated deployment, dan health check):
+
+```
+Started by GitHub push by phyxa12
+Obtained Jenkinsfile from git git@github.com:phyxa12/python-crud-api.git
+[Pipeline] { (1. Checkout Code)
+Checking out Revision 581d1388fd68b6f7915fdd2917480163d7cf7b37 (refs/remotes/origin/main)
+Commit message: "test: trigger GitHub webhook (second attempt)"
+Building commit: 581d1388fd68b6f7915fdd2917480163d7cf7b37
+[Pipeline] { (2. Lint Python)
++ python3 -m ruff check app.py test_app.py
+All checks passed!
+[Pipeline] { (3. Syntax Check & Unit Test)
++ python3 -m py_compile app.py test_app.py
++ python3 -m unittest -v test_app.py
+Ran 14 tests in 7.055s — OK
+[Pipeline] { (4. Build Docker Image)
++ docker build -t python-crud-api:5 -t python-crud-api:581d138 .
+Successfully built 628cbaaa2046
+Successfully tagged python-crud-api:5
+Successfully tagged python-crud-api:581d138
++ docker tag python-crud-api:5 python-crud-api:latest
+[Pipeline] { (5. Automated Deployment)
+Previous image recorded: python-crud-api:latest
++ docker stop production-api-container
++ docker rm production-api-container
++ docker volume create production-api-data
++ docker run -d --name production-api-container -p 5000:5000 -v production-api-data:/var/lib/backend_data --restart unless-stopped python-crud-api:latest
+[Pipeline] { (6. Health Check)
++ curl -fsS http://host.docker.internal:5000/health
+{"status": "active", "service": "Backend API"}
+Health check passed on attempt 1
++ docker logs --tail 20 production-api-container
+Backend API listening on 0.0.0.0:5000
+[31/Oct/2026 11:37:09] "GET /health HTTP/1.1" 200 -
+[Pipeline] { (Declarative: Post Actions)
+Pipeline completed successfully.
+Finished: SUCCESS
+```
+
 ---
 
 ## 5. Tugas C — persistensi data
@@ -174,7 +214,23 @@ Selain uji lokal, persistensi juga dibuktikan lewat pipeline: dua pesan dibuat
 (`id` 3 dan 4), lalu **Jenkins build #7** mengganti container (`docker stop`/`rm`/`run`).
 Setelah redeploy, `GET /messages` masih mengembalikan tiga pesan yang sama
 (`Bukti/06_persistence_jenkins_redeploy.log`). Container baru berjalan dari image
-`python-crud-api:latest` dengan mount `production-api-data:/var/lib/backend_data`.
+`python-crud-api:latest` dengan mount `production-api-data:/var/lib/backend_data`:
+
+```
+== messages before redeploy ==
+{"messages": [{"id": 2, "message": "Pesan kedua", "created_at": "2026-10-31T10:55:16.160930+00:00"}], "total": 1}
+== create two messages ==
+{"status": "created", "message": {"id": 3, "message": "Pesan tugas C nomor satu", "created_at": "2026-10-31T11:37:26.725523+00:00"}}
+{"status": "created", "message": {"id": 4, "message": "Pesan tugas C nomor dua", "created_at": "2026-10-31T11:37:26.748044+00:00"}}
+== list before redeploy ==
+{"messages": [{"id": 2, "message": "Pesan kedua", "created_at": "2026-10-31T10:55:16.160930+00:00"}, {"id": 3, "message": "Pesan tugas C nomor satu", "created_at": "2026-10-31T11:37:26.725523+00:00"}, {"id": 4, "message": "Pesan tugas C nomor dua", "created_at": "2026-10-31T11:37:26.748044+00:00"}], "total": 3}
+== redeploy by Jenkins build #7 (container replaced, volume kept) ==
+container: production-api-container image=python-crud-api:latest status=Up (healthy)
+volume mount: production-api-data -> /var/lib/backend_data
+== list after Jenkins redeploy ==
+{"messages": [{"id": 2, "message": "Pesan kedua", "created_at": "2026-10-31T10:55:16.160930+00:00"}, {"id": 3, "message": "Pesan tugas C nomor satu", "created_at": "2026-10-31T11:37:26.725523+00:00"}, {"id": 4, "message": "Pesan tugas C nomor dua", "created_at": "2026-10-31T11:37:26.748044+00:00"}], "total": 3}
+PASS  data survived the redeploy performed by the Jenkins pipeline
+```
 
 **Perbedaan lifecycle container dan named volume.** Container adalah proses + filesystem
 lapisan tipis yang dibuat dari image; ketika container dihapus, lapisan tulisnya ikut hilang.
@@ -422,6 +478,45 @@ aplikasi menulis ke lokasi lain di dalam container.
 | Unit test | `python3 -m unittest -v test_app.py` | 14 test, semua OK |
 | Lint | `ruff check app.py test_app.py` | All checks passed |
 
+Output `curl` nyata untuk endpoint Health dan operasi CRUD (dari `Bukti/01_local_verification.log`):
+
+```
+$ curl -i http://localhost:5000/health
+HTTP/1.0 200 OK
+Content-Type: application/json; charset=utf-8
+{"status": "active", "service": "Backend API"}
+
+$ curl -s http://localhost:5000/messages
+{"messages": [], "total": 0}
+
+$ curl -i -X POST http://localhost:5000/messages -H 'Content-Type: application/json' \
+  -d '{"message":"Pesan pertama dari praktikum"}'
+HTTP/1.0 201 Created
+{"status": "created", "message": {"id": 1, "message": "Pesan pertama dari praktikum", "created_at": "2026-10-31T10:55:16.127455+00:00"}}
+
+$ curl -i -X POST http://localhost:5000/messages -H 'Content-Type: application/json' \
+  -d '{"message":"Pesan kedua"}'
+HTTP/1.0 201 Created
+{"status": "created", "message": {"id": 2, "message": "Pesan kedua", "created_at": "2026-10-31T10:55:16.160930+00:00"}}
+
+$ curl -s http://localhost:5000/messages
+{"messages": [{"id": 1, "message": "Pesan pertama dari praktikum", "created_at": "2026-10-31T10:55:16.127455+00:00"}, {"id": 2, "message": "Pesan kedua", "created_at": "2026-10-31T10:55:16.160930+00:00"}], "total": 2}
+
+$ curl -s http://localhost:5000/messages/1
+{"message": {"id": 1, "message": "Pesan pertama dari praktikum", "created_at": "2026-10-31T10:55:16.127455+00:00"}}
+
+$ curl -s 'http://localhost:5000/messages?search=kedua'
+{"messages": [{"id": 2, "message": "Pesan kedua", "created_at": "2026-10-31T10:55:16.160930+00:00"}], "total": 1}
+
+$ curl -i -X DELETE 'http://localhost:5000/messages?index=0'
+HTTP/1.0 200 OK
+{"status": "deleted", "removed": {"id": 1, "message": "Pesan pertama dari praktikum", "created_at": "2026-10-31T10:55:16.127455+00:00"}}
+
+$ curl -i -X DELETE 'http://localhost:5000/messages?index=999'
+HTTP/1.0 404 Not Found
+{"error": "Message not found"}
+```
+
 ---
 
 ## 10. Kegagalan yang ditemukan dan penyelesaiannya
@@ -503,10 +598,8 @@ aplikasi menulis ke lokasi lain di dalam container.
 | `Bukti/screenshots/06_jenkins_credentials.png` | daftar credential (nilai tidak ditampilkan) |
 | `Bukti/screenshots/07_jenkins_polling_log.png` | log polling SCM (revisi terakhir dan hasil polling) |
 | `Bukti/screenshots/08_jenkins_build8_scm.png` | build #8 dari polling otomatis ("Started by an SCM change") |
-
-Screenshot halaman GitHub *Recent Deliveries* tidak dapat diambil otomatis karena mesin ini
-tidak memiliki sesi login GitHub; gunakan `scripts/capture_webhook_screenshot.py` atau ambil
-manual (lihat bagian 7.3).
+| `Bukti/screenshots/09_github_webhook_deliveries.png` | GitHub Webhook *Recent Deliveries* (response `200 OK`) |
+| `Bukti/screenshots/10_github_repository.png` | halaman repository GitHub `phyxa12/python-crud-api` |
 
 Instance Jenkins lab masih berjalan di `http://localhost:8081` selama pengerjaan (password
 admin disimpan lokal pada `CC-2/jenkins-lab-credentials.txt`, bukan di repository). Hentikan
@@ -516,14 +609,13 @@ dengan:
 docker stop jenkins-server
 ```
 
-Screenshot halaman GitHub *Recent Deliveries* memerlukan sesi login GitHub. Bila screenshot
-belum tersedia saat submit, jalankan `python3 scripts/capture_webhook_screenshot.py` (browser
-terbuka, login, lalu skrip menyimpan screenshot), atau ambil manual melalui
-`Settings` → `Webhooks` → pilih hook → `Recent Deliveries`.
-
 ---
 
 ## 13. Lampiran — screenshot
+
+Halaman repository GitHub (`https://github.com/phyxa12/python-crud-api`) dengan struktur proyek dan commit history:
+
+![GitHub Repository](Bukti/screenshots/10_github_repository.png)
 
 Job pipeline dengan seluruh stage hijau dan riwayat build #1–#7:
 
@@ -557,3 +649,7 @@ Log polling SCM (revisi terakhir yang dibangun dan hasil pemeriksaan remote):
 Build #8 terpicu otomatis oleh polling (`Started by an SCM change`):
 
 ![Build 8](Bukti/screenshots/08_jenkins_build8_scm.png)
+
+GitHub Webhook *Recent Deliveries* dengan response sukses (`200 OK`) pengiriman event `push`:
+
+![GitHub Webhook Recent Deliveries](Bukti/screenshots/09_github_webhook_deliveries.png)
